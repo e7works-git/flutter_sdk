@@ -1,0 +1,55 @@
+name: Publishing test_vchatcloud
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*' # tag pattern on pub.dev: 'v'
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: ls
+        shell: bash
+        run: ls pub_login.sh
+      
+      - name: Use Flutter
+        uses: subosito/flutter-action@v2
+        id: cache
+        with:
+          channel: 'stable'
+          flutter-version: ${{ secrets.FLUTTER_VERSION }}
+          cache: true
+          
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: dart pub get
+      
+      - name: Analyze
+        run: flutter analyze
+      
+      - name: Run tests
+        if: ${{ always() }}
+        run: flutter test
+    
+      - uses: actions/checkout@v2
+    
+      - name: Setup Pub Credentials
+        shell: bash
+        env:
+          PUB_DEV_PUBLISH_ACCESS_TOKEN: ${{ secrets.PUB_DEV_PUBLISH_ACCESS_TOKEN }}
+          PUB_DEV_PUBLISH_REFRESH_TOKEN: ${{ secrets.PUB_DEV_PUBLISH_REFRESH_TOKEN }}
+          PUB_DEV_PUBLISH_TOKEN_ENDPOINT: ${{ secrets.PUB_DEV_PUBLISH_TOKEN_ENDPOINT }}
+          PUB_DEV_PUBLISH_EXPIRATION: ${{ secrets.PUB_DEV_PUBLISH_EXPIRATION }}
+        run: sh pub_login.sh
+        
+      - name: Check Publish Warnings
+        if: ${{ always() }}
+        run: flutter pub publish --dry-run
+        
+      - name: Set pub_hosted_url
+        run: echo "pub_hosted_url:https://pub.dartlang.org"
+      
+      - name: Publish Package
+        run: flutter pub publish -f
