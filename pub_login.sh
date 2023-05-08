@@ -23,7 +23,6 @@ if [ -z "${PUB_DEV_PUBLISH_EXPIRATION}" ]; then
   exit 1
 fi
 
-mkdir -p ~/.pub-cache
 mkdir -p $HOME/.config/dart
 
 # Create credentials.json file.
