@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:vchatcloud_flutter_sdk/channel.dart';
-import 'package:vchatcloud_flutter_sdk/channel_handler.dart';
+import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// `VChatCloud.connect()` 실행으로 초기화
@@ -38,7 +37,7 @@ class VChatCloud {
       return _channel;
     }
 
-    final uri = Uri.parse("wss://$url:9001/eventbus/websocket");
+    final uri = Uri.parse("wss://${VChatCloud.url}:9001/eventbus/websocket");
     _socket = WebSocketChannel.connect(uri);
     await _socket.ready;
 

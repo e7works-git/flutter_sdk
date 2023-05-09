@@ -1,3 +1,9 @@
+## 1.0.2
+
+* Fix connect socket server url.
+* Add ChannelMessageModel class.
+* Change ChannelHandler's parameter.
+
 ## 1.0.1
 
 * Project Name Changed.

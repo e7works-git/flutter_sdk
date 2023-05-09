@@ -1,4 +1,4 @@
-import 'package:vchatcloud_flutter_sdk/v_chat_cloud.dart';
+import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 
 /// 메시지의 데이터 타입
 enum MimeType {

@@ -4,12 +4,8 @@ import 'dart:io';
 import 'package:encrypt/encrypt.dart';
 import 'package:http/http.dart';
 import 'package:universal_html/html.dart' as html;
-import 'package:vchatcloud_flutter_sdk/constants.dart';
-import 'package:vchatcloud_flutter_sdk/model/chat_room_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/file_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/google_translation_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/open_graph_model.dart';
 import 'package:vchatcloud_flutter_sdk/util.dart';
+import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 
 /// VChatCloud OpenAPI
 class VChatCloudApi {
@@ -18,9 +14,20 @@ class VChatCloudApi {
     var uri = ApiPath.getRoomInfo.addGetParam({"roomId": roomId});
     var request = await get(uri);
 
+    var aa = "flutter_vchatcloud_sdk_open_api_";
+    var a = Encrypted.fromBase64(
+        "P/WY2Q2XNtup38A3mJPVk/ma3kPa770t1GQ/ClVPwEUkTWpaz9kzx7RQScuoK4mY");
+    var b = Encrypter(AES(
+      Key.fromUtf8(aa),
+      mode: AESMode.cbc,
+      padding: 'PKCS7',
+    ));
+    var c = IV.fromUtf8(aa.substring(0, 16));
+    var d = b.decrypt(a, iv: c);
+
     // Decrypt
     var e = Encrypter(AES(
-      Key.fromUtf8("e7_keystore_aes_cbc_pkcsspadding"),
+      Key.fromUtf8(d),
       mode: AESMode.cbc,
       padding: 'PKCS7',
     ));
@@ -28,7 +35,7 @@ class VChatCloudApi {
     var data = json.decode(request.body)['data'];
     var rd = base64Decode(data);
     var en = Encrypted(rd);
-    var iv = IV.fromUtf8("e7_keystore_aes_cbc_pkcsspadding".substring(0, 16));
+    var iv = IV.fromUtf8(d.substring(0, 16));
 
     var result = e.decrypt(en, iv: iv);
     var model = ChatRoomModel.fromJson(json.decode(result));
@@ -71,7 +78,6 @@ class VChatCloudApi {
   ///
   /// **저장 전 저장소 접근 권한을 얻어야 함**
   static Future<File> download({
-    required String roomId,
     required FileModel file,
     required String downloadPath,
   }) async {

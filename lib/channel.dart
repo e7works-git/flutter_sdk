@@ -3,13 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
-import 'package:vchatcloud_flutter_sdk/channel_handler.dart';
-import 'package:vchatcloud_flutter_sdk/constants.dart';
-import 'package:vchatcloud_flutter_sdk/model/channel_result_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/file_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/upload_file_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/user_model.dart';
-import 'package:vchatcloud_flutter_sdk/model/v_chat_cloud_error.dart';
+import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class Channel {
@@ -35,6 +29,7 @@ class Channel {
   Channel _eventInit() {
     _subscription ??= _client.stream.listen((event) {
       var data = _decode(event);
+      var message = ChannelMessageModel.fromJson(data.body)..error = data.error;
 
       // 첫 조인 시 히스토리 수신
       if (data.address == "join_user_init") {
@@ -64,34 +59,49 @@ class Channel {
         }
       }
       if (data.address == "s2c.notify.message/$roomId") {
-        _handler.onMessage(data);
+        _handler.onMessage(message);
       }
       if (data.address.startsWith("s2c.personal.whisper/$roomId")) {
-        _handler.onWhisper(data);
+        _handler.onWhisper(message);
       }
       if (data.address == "s2c.notify.notice/$roomId") {
-        _handler.onNotice(data);
+        _handler.onNotice(message);
       }
       if (data.address == "s2c.notify.custom/$roomId") {
-        _handler.onCustom(data);
+        _handler.onCustom(message);
       }
       if (data.address == "s2c.notify.join.user/$roomId") {
-        _handler.onJoinUser(data);
+        _handler.onJoinUser(message);
       }
       if (data.address == "s2c.notify.leave.user/$roomId") {
-        _handler.onLeaveUser(data);
+        _handler.onLeaveUser(message);
       }
       if (data.address == "s2c.notify.kick.user/$roomId") {
-        _handler.onKickUser(data);
+        _handler.onKickUser(message);
       }
       if (data.address == "s2c.notify.unkick.user/$roomId") {
-        _handler.onUnkickUser(data);
+        _handler.onUnkickUser(message);
       }
       if (data.address == "s2c.notify.mute.user/$roomId") {
-        _handler.onMuteUser(data);
+        _handler.onMuteUser(message);
       }
       if (data.address == "s2c.notify.unmute.user/$roomId") {
-        _handler.onUnmuteUser(data);
+        _handler.onUnmuteUser(message);
+      }
+      if (data.address.startsWith("s2c.personal.duplicate.user/$roomId")) {
+        _handler.onPersonalDuplicateUser(message);
+      }
+      if (data.address.startsWith("s2c.personal.invite/$roomId")) {
+        _handler.onPersonalInvite(message);
+      }
+      if (data.address.startsWith("s2c.personal.kick.user/$roomId")) {
+        _handler.onPersonalKickUser(message);
+      }
+      if (data.address.startsWith("s2c.personal.mute.user/$roomId")) {
+        _handler.onMuteUser(message);
+      }
+      if (data.address.startsWith("s2c.personal.unmute.user/$roomId")) {
+        _handler.onUnmuteUser(message);
       }
 
       if (_callback != null) {

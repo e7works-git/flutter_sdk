@@ -1,79 +1,79 @@
-import 'package:vchatcloud_flutter_sdk/model/channel_result_model.dart';
+import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 
 /// 해당 클래스를 상속해서 메서드를 구현해야 합니다.
 abstract class ChannelHandler {
   /// 메시지 수신 시 실행
-  void onMessage(ChannelResultModel message) {
+  void onMessage(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 귓속말 수신 시 실행
-  void onWhisper(ChannelResultModel message) {
+  void onWhisper(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 공지사항 수신 시 실행
-  void onNotice(ChannelResultModel message) {
+  void onNotice(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// `CustomEvent` 수신 시 실행
-  void onCustom(ChannelResultModel message) {
+  void onCustom(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 방에 새 유저 접속시 실행
-  void onJoinUser(ChannelResultModel message) {
+  void onJoinUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 방에서 유저 퇴장 시 실행
-  void onLeaveUser(ChannelResultModel message) {
+  void onLeaveUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 추방당할 시 실행
-  void onPersonalKickUser(ChannelResultModel message) {
-    throw UnimplementedError();
-  }
-
-  /// 추방 해제 시 실행
-  void onPersonalUnkickUser(ChannelResultModel message) {
+  void onPersonalKickUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 차단당할 시 실행
-  void onPersonalMuteUser(ChannelResultModel message) {
+  void onPersonalMuteUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 차단 해제 시 실행
-  void onPersonalUnmuteUser(ChannelResultModel message) {
+  void onPersonalUnmuteUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
   /// 중복 로그인 시도 시 접속 유저에게 실행
-  void onPersonalDuplicateUser(ChannelResultModel message) {
+  void onPersonalDuplicateUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
-  void onPersonalInvite(ChannelResultModel message) {
+  /// 채팅방에 특정 유저 초대 시 실행
+  void onPersonalInvite(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
-  void onKickUser(ChannelResultModel message) {
+  /// 채팅방에서 유저 추방 시 실행
+  void onKickUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
-  void onUnkickUser(ChannelResultModel message) {
+  /// 채팅방에서 유저 추방 해제 시 실행
+  void onUnkickUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
-  void onMuteUser(ChannelResultModel message) {
+  /// 채팅방에서 유저 채팅 금지 시 실행
+  void onMuteUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 
-  void onUnmuteUser(ChannelResultModel message) {
+  /// 채팅방에서 유저 채팅 금지 해제 시 실행
+  void onUnmuteUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
 }

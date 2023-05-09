@@ -3,7 +3,7 @@ import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 // Extends ChannelHandler to implement method
 class CustomHandler extends ChannelHandler {
   @override
-  void onMessage(ChannelResultModel message) {
+  void onMessage(ChannelMessageModel message) {
     // Write your code..
   }
 }

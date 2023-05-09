@@ -4,6 +4,7 @@ export 'package:vchatcloud_flutter_sdk/channel.dart';
 export 'package:vchatcloud_flutter_sdk/channel_handler.dart';
 export 'package:vchatcloud_flutter_sdk/constants.dart'
     hide imgTypeList, videoTypeList;
+export 'package:vchatcloud_flutter_sdk/model/channel_message_model.dart';
 export 'package:vchatcloud_flutter_sdk/model/channel_result_model.dart';
 export 'package:vchatcloud_flutter_sdk/model/chat_room_model.dart';
 export 'package:vchatcloud_flutter_sdk/model/file_model.dart';

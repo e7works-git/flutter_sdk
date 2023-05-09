@@ -1,4 +1,4 @@
-import 'package:vchatcloud_flutter_sdk/model/v_chat_cloud_error.dart';
+import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 
 class ChannelResultModel {
   final String type;
