@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:encrypt/encrypt.dart';
 import 'package:http/http.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:vchatcloud_flutter_sdk/model/common_result_model.dart';
 import 'package:vchatcloud_flutter_sdk/util.dart';
 import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 
@@ -145,5 +146,23 @@ class VChatCloudApi {
 
     var response = await get(url);
     return GoogleTranslationModel.fromJson(json.decode(response.body));
+  }
+
+  /// user 신고하기
+  static Future<CommonResultModel> reportUser({
+    required String roomId, //채널 키
+    required String buserChatId, // 차단유저 채팅ID
+    required String buserNick, // 차단유저 닉네임
+    required String buserMsg, // 차단유저 메세지
+  }) async {
+    var uri = ApiPath.reportUser.addPostParam({
+      'room_id': roomId,
+      'buser_chat_id': buserChatId,
+      'buser_nick': buserNick,
+      'buser_buser_msg': buserMsg,
+    });
+    var response = await post(uri);
+    CommonResultModel result = json.decode(response.body);
+    return result;
   }
 }

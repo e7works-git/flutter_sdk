@@ -52,7 +52,7 @@ class ApiPath {
   static String get getOpenGraph => "$apiPath/openapi/getOepnGraph";
   static String get googleTranslate => "$apiPath/openapi/googleTranslate";
   static String get getLike => "$apiPath/openapi/getLike";
-
+  static String get reportUser => "$apiPath/openapi/insertChatBanUser";
   ApiPath._();
 }
 

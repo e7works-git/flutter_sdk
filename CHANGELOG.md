@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Add reportUserAPI.
+
 ## 1.0.2
 
 * Fix connect socket server url.
