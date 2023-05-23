@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Change reportUserAPI.
+
 ## 1.0.3
 
 * Add reportUserAPI.

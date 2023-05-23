@@ -159,10 +159,9 @@ class VChatCloudApi {
       'room_id': roomId,
       'buser_chat_id': buserChatId,
       'buser_nick': buserNick,
-      'buser_buser_msg': buserMsg,
+      'buser_msg': buserMsg,
     });
     var response = await post(uri);
-    CommonResultModel result = json.decode(response.body);
-    return result;
+    return CommonResultModel.fromJson(json.decode(response.body));
   }
 }
