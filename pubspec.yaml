@@ -1,6 +1,6 @@
 name: vchatcloud_flutter_sdk
 description: vchatcloud_flutter_sdk is a chat-related package that helps implement chat applications for multiple platforms such as web, Android, and ios.
-version: 1.0.4
+version: 1.0.5
 homepage: https://vchatcloud.com
 
 environment:

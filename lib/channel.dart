@@ -29,6 +29,10 @@ class Channel {
   Channel _eventInit() {
     _subscription ??= _client.stream.listen((event) {
       var data = _decode(event);
+      if (data.error != null && !_joined.isCompleted) {
+        _joined.completeError(data.error!);
+      }
+
       var message = ChannelMessageModel.fromJson(data.body)..error = data.error;
 
       // 첫 조인 시 히스토리 수신
@@ -325,6 +329,7 @@ class Channel {
         if (_client.closeReason == null) {
           _send({"type": "ping"});
         } else {
+          dispose();
           timer.cancel();
         }
       } catch (e) {
@@ -350,8 +355,12 @@ class Channel {
     return this;
   }
 
-  void dispose() {
-    _subscription?.cancel();
+  void dispose({VChatCloudResult? result}) {
+    if (_client.closeReason == null) {
+      result ??= VChatCloudResult.disconnectedNetwork;
+      _subscription?.cancel();
+      _handler.onDisconnect(result);
+    }
   }
 
   ChannelResultModel _decode(dynamic message) {

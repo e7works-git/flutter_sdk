@@ -42,8 +42,10 @@ class ChannelMessageModel {
             ? jsonDecode(json['userInfo'])
             : json['userInfo'] {
     if (json['messageDt'] != null) {
-      var date = json['messageDt'] as String?;
-      if (date != null) {
+      var date = json['messageDt'];
+      if (date is int) {
+        messageDt = DateTime.fromMillisecondsSinceEpoch(date);
+      } else if (date is String) {
         messageDt = DateTime(
           int.parse(date.substring(0, 4)),
           int.parse(date.substring(4, 6)),

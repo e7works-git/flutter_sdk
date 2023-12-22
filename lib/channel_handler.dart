@@ -76,4 +76,9 @@ abstract class ChannelHandler {
   void onUnmuteUser(ChannelMessageModel message) {
     throw UnimplementedError();
   }
+
+  /// 채팅 서버와 연결이 종료되었을 때 실행
+  void onDisconnect(VChatCloudResult code) {
+    throw UnimplementedError();
+  }
 }

@@ -1,3 +1,7 @@
+## 1.0.5
+
+* Add onDisconnect handler interface.
+
 ## 1.0.4
 
 * Change reportUserAPI.

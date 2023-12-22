@@ -16,7 +16,10 @@ enum VChatCloudResult {
   missingRequiredParam(10901, "필수 파라미터 누락"),
 
   /// API 결과 코드
-  incorrectRequest(400, "잘못된 요청입니다.");
+  incorrectRequest(400, "잘못된 요청입니다."),
+
+  /// 기타 네트워크 오류
+  disconnectedNetwork(1000, "네트워크 연결이 끊어졌습니다.");
 
   final int code;
   final String message;
