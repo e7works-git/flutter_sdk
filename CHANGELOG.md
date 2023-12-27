@@ -1,3 +1,7 @@
+## 1.0.6
+
+* Update pubspec.yaml.
+
 ## 1.0.5
 
 * Add onDisconnect handler interface.
