@@ -4,14 +4,14 @@ version: 1.0.6
 homepage: https://vchatcloud.com
 
 environment:
-  sdk: ">=2.19.3 <4.0.0"
+  sdk: ">=2.19.3 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
   web_socket_channel: ^2.3.0
-  http: ^1.1.2
+  http: ^0.13.5
   encrypt: ^5.0.1
   universal_html: ^2.2.1
 
