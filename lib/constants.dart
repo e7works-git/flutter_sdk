@@ -76,3 +76,5 @@ extension ApiPathUri on String {
     return Uri.parse(this).replace(queryParameters: param);
   }
 }
+
+const serverTimezoneOffset = Duration(hours: 9);

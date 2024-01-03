@@ -43,20 +43,40 @@ class ChannelMessageModel {
             : json['userInfo'] {
     if (json['messageDt'] != null) {
       var date = json['messageDt'];
-      if (date is int) {
-        messageDt = DateTime.fromMillisecondsSinceEpoch(date);
+      if (date is DateTime) {
+        messageDt = date;
+      } else if (date is int) {
+        messageDt =
+            DateTime.fromMillisecondsSinceEpoch(date, isUtc: true).toLocal();
       } else if (date is String) {
-        messageDt = DateTime(
+        messageDt = DateTime.utc(
           int.parse(date.substring(0, 4)),
           int.parse(date.substring(4, 6)),
           int.parse(date.substring(6, 8)),
           int.parse(date.substring(8, 10)),
           int.parse(date.substring(10, 12)),
           int.parse(date.substring(12, 14)),
-        );
+        ).subtract(serverTimezoneOffset).toLocal();
       }
+    } else if (json['date'] is String) {
+      String date = json['date'];
+      messageDt = DateTime.utc(
+        int.parse(date.substring(0, 4)),
+        int.parse(date.substring(5, 7)),
+        int.parse(date.substring(8, 10)),
+        int.parse(date.substring(11, 13)),
+        int.parse(date.substring(14, 16)),
+        int.parse(date.substring(17, 19)),
+      ).subtract(serverTimezoneOffset).toLocal();
     } else {
-      messageDt = DateTime.now();
+      messageDt = DateTime.now().toLocal();
     }
   }
+
+  ChannelMessageModel.fromError(this.error)
+      : clientKey = null,
+        messageType = null,
+        mimeType = null,
+        roomId = null,
+        userInfo = null;
 }
