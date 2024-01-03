@@ -37,19 +37,25 @@ class VChatCloud {
       return _channel;
     }
 
-    final uri = Uri.parse("wss://${VChatCloud.url}:9001/eventbus/websocket");
-    _socket = WebSocketChannel.connect(uri);
-    await _socket.ready;
+    try {
+      final uri = Uri.parse("wss://${VChatCloud.url}:9001/eventbus/websocket");
+      _socket = WebSocketChannel.connect(uri);
+      await _socket.ready;
 
-    _channel = Channel(_socket, channelHandler);
-    _isInitialized = true;
-    return _channel;
+      _channel = Channel(_socket, channelHandler);
+      _isInitialized = true;
+      return _channel;
+    } catch (e) {
+      if (e is Error) {
+        debugPrintStack(label: e.toString(), stackTrace: e.stackTrace);
+      }
+      rethrow;
+    }
   }
 
-  static disconnect() async {
+  static disconnect(VChatCloudResult result) async {
     try {
-      _channel.leave();
-      _socket.sink.close();
+      _channel.dispose(result);
     } catch (e) {
       if (e is Error) {
         debugPrintStack(label: e.toString(), stackTrace: e.stackTrace);

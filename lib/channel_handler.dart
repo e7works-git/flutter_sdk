@@ -78,7 +78,7 @@ abstract class ChannelHandler {
   }
 
   /// 채팅 서버와 연결이 종료되었을 때 실행
-  void onDisconnect(VChatCloudResult code) {
+  void onDisconnect(VChatCloudResult? result) {
     throw UnimplementedError();
   }
 }

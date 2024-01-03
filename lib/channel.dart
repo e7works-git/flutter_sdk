@@ -7,14 +7,16 @@ import 'package:vchatcloud_flutter_sdk/vchatcloud_flutter_sdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class Channel {
-  final WebSocketChannel _client;
+  WebSocketChannel _client;
   final ChannelHandler _handler;
   StreamSubscription? _subscription;
-  late Completer<ChannelResultModel> _joined;
-  late Completer<List<UserModel>> _clientList;
+  Completer<ChannelResultModel>? _joined;
+  Completer<List<UserModel>>? _clientList;
   Function(ChannelResultModel)? _callback;
+  Timer? _pingTimer;
 
   UserModel? user;
+  VChatCloudResult? _finalDisconnectResult;
 
   get roomId {
     return user?.roomId;
@@ -24,92 +26,139 @@ class Channel {
     _callback = callback;
   }
 
-  Channel(this._client, this._handler);
+  Channel(this._client, this._handler) {
+    _eventInit();
+  }
 
   Channel _eventInit() {
-    _subscription ??= _client.stream.listen((event) {
-      var data = _decode(event);
-      if (data.error != null && !_joined.isCompleted) {
-        _joined.completeError(data.error!);
-      }
+    if (_subscription != null) return this;
+    _subscription = _client.stream.listen(
+      (event) {
+        var data = _decode(event);
+        ChannelMessageModel message;
+        if (data.type == 'err' && data.error != null) {
+          message = ChannelMessageModel.fromError(data.error!);
+        } else {
+          message = ChannelMessageModel.fromJson(data.body)..error = data.error;
+        }
 
-      var message = ChannelMessageModel.fromJson(data.body)..error = data.error;
-
-      // 첫 조인 시 히스토리 수신
-      if (data.address == "join_user_init") {
-        if (!_joined.isCompleted) {
-          if (data.error != null) {
-            _joined.completeError(data.error!);
+        // 첫 조인 시 히스토리 수신
+        if (data.address == "join_user_init" && _joined != null) {
+          if (data.error == null) {
+            _joined!.complete(data);
           } else {
-            _joined.complete(data);
+            _joined!.completeError(data.error!);
           }
         }
-      }
-      if (data.address == "client_user_list") {
-        try {
-          var clientList = (data.body["clientlist"] as List<dynamic>)
-              .map((data) => UserModel.fromJson(data as Map<String, dynamic>))
-              .toList();
-          if (!_clientList.isCompleted) {
-            _clientList.complete(clientList);
-          }
-        } catch (e) {
-          if (!_clientList.isCompleted) {
-            _clientList.completeError(
+        if (data.address == "client_user_list" && _clientList != null) {
+          try {
+            var clientList = (data.body["clientlist"] as List<dynamic>)
+                .map((data) => UserModel.fromJson(data as Map<String, dynamic>))
+                .toList();
+            _clientList!.complete(clientList);
+          } catch (e) {
+            if (e is Error) {
+              debugPrintStack(label: e.toString(), stackTrace: e.stackTrace);
+            }
+            _clientList!.completeError(
               data.error ??
                   VChatCloudError.fromResult(VChatCloudResult.systemError),
             );
           }
         }
-      }
-      if (data.address == "s2c.notify.message/$roomId") {
-        _handler.onMessage(message);
-      }
-      if (data.address.startsWith("s2c.personal.whisper/$roomId")) {
-        _handler.onWhisper(message);
-      }
-      if (data.address == "s2c.notify.notice/$roomId") {
-        _handler.onNotice(message);
-      }
-      if (data.address == "s2c.notify.custom/$roomId") {
-        _handler.onCustom(message);
-      }
-      if (data.address == "s2c.notify.join.user/$roomId") {
-        _handler.onJoinUser(message);
-      }
-      if (data.address == "s2c.notify.leave.user/$roomId") {
-        _handler.onLeaveUser(message);
-      }
-      if (data.address == "s2c.notify.kick.user/$roomId") {
-        _handler.onKickUser(message);
-      }
-      if (data.address == "s2c.notify.unkick.user/$roomId") {
-        _handler.onUnkickUser(message);
-      }
-      if (data.address == "s2c.notify.mute.user/$roomId") {
-        _handler.onMuteUser(message);
-      }
-      if (data.address == "s2c.notify.unmute.user/$roomId") {
-        _handler.onUnmuteUser(message);
-      }
-      if (data.address.startsWith("s2c.personal.duplicate.user/$roomId")) {
-        _handler.onPersonalDuplicateUser(message);
-      }
-      if (data.address.startsWith("s2c.personal.invite/$roomId")) {
-        _handler.onPersonalInvite(message);
-      }
-      if (data.address.startsWith("s2c.personal.kick.user/$roomId")) {
-        _handler.onPersonalKickUser(message);
-      }
-      if (data.address.startsWith("s2c.personal.mute.user/$roomId")) {
-        _handler.onMuteUser(message);
-      }
-      if (data.address.startsWith("s2c.personal.unmute.user/$roomId")) {
-        _handler.onUnmuteUser(message);
-      }
+        if (data.address == "s2c.notify.message/$roomId") {
+          _handler.onMessage(message);
+        }
+        if (data.address.startsWith("s2c.personal.whisper/$roomId")) {
+          _handler.onWhisper(message);
+        }
+        if (data.address == "s2c.notify.notice/$roomId") {
+          _handler.onNotice(message);
+        }
+        if (data.address == "s2c.notify.custom/$roomId") {
+          _handler.onCustom(message);
+        }
+        if (data.address == "s2c.notify.join.user/$roomId") {
+          _handler.onJoinUser(message);
+        }
+        if (data.address == "s2c.notify.leave.user/$roomId") {
+          _handler.onLeaveUser(message);
+        }
+        if (data.address == "s2c.notify.kick.user/$roomId") {
+          _handler.onKickUser(message);
+        }
+        if (data.address == "s2c.notify.unkick.user/$roomId") {
+          _handler.onUnkickUser(message);
+        }
+        if (data.address == "s2c.notify.mute.user/$roomId") {
+          _handler.onMuteUser(message);
+        }
+        if (data.address == "s2c.notify.unmute.user/$roomId") {
+          _handler.onUnmuteUser(message);
+        }
+        if (data.address.startsWith("s2c.personal.duplicate.user/$roomId")) {
+          _handler.onPersonalDuplicateUser(message);
+        }
+        if (data.address.startsWith("s2c.personal.invite/$roomId")) {
+          _handler.onPersonalInvite(message);
+        }
+        if (data.address.startsWith("s2c.personal.kick.user/$roomId")) {
+          _handler.onPersonalKickUser(message);
+        }
+        if (data.address.startsWith("s2c.personal.mute.user/$roomId")) {
+          _handler.onMuteUser(message);
+        }
+        if (data.address.startsWith("s2c.personal.unmute.user/$roomId")) {
+          _handler.onUnmuteUser(message);
+        }
 
-      if (_callback != null) {
-        _callback!(data);
+        if (_callback != null) {
+          _callback!(data);
+        }
+      },
+      onError: (e) {},
+      onDone: () async {
+        _pingTimer?.cancel();
+
+        if (_finalDisconnectResult == VChatCloudResult.channelUserBaned) {
+          // dispose(_finalDisconnectResult!);
+          return;
+        }
+        if (_finalDisconnectResult == null) {
+          await _reconnect();
+          if (user != null && _client.closeCode != 3000) {
+            _subscription = null;
+            try {
+              _eventInit();
+              await join(user!);
+            } catch (e) {
+              _pingTimer?.cancel();
+              if (e is VChatCloudError) {
+                _finalDisconnectResult = VChatCloudResult.fromCode(e.code);
+                if (_finalDisconnectResult ==
+                    VChatCloudResult.channelUserBaned) {
+                  dispose(VChatCloudResult.userBannedByAdmin);
+                } else {
+                  dispose(_finalDisconnectResult!);
+                }
+              }
+            }
+          }
+        }
+      },
+    );
+
+    _pingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      try {
+        if (_client.closeReason == null) {
+          _send({"type": "ping"});
+        } else {
+          timer.cancel();
+          dispose(VChatCloudResult.systemError);
+        }
+      } catch (e) {
+        timer.cancel();
+        dispose(VChatCloudResult.systemError);
       }
     });
 
@@ -129,7 +178,9 @@ class Channel {
       "replyAddress": "client_user_list",
     });
 
-    return await _clientList.future;
+    var result = await _clientList!.future;
+    _clientList = null;
+    return result;
   }
 
   /// 메시지 발송
@@ -302,42 +353,42 @@ class Channel {
 
   /// 방 접속
   Future<ChannelResultModel> join(UserModel user) async {
-    this.user = user;
-    _joined = Completer();
+    if (_joined != null && _joined!.isCompleted) {
+      throw VChatCloudError.fromResult(VChatCloudResult.alreadyInConnection);
+    }
 
-    _eventInit();
+    try {
+      this.user = user;
+      _joined = Completer();
 
-    _send({
-      "type": "send",
-      "address": "c2s.join",
-      "headers": {},
-      "body": {
-        "roomId": roomId,
-        "clientKey": user.clientKey,
-        "nickName": user.nickName,
-        "grade": user.grade,
-        "userInfo": user.userInfo,
-      },
-      "replyAddress": "join_user_init"
-    });
+      _eventInit();
 
-    // 방 조인 대기
-    var history = await _joined.future;
+      _send({
+        "type": "send",
+        "address": "c2s.join",
+        "headers": {},
+        "body": {
+          "roomId": roomId,
+          "clientKey": user.clientKey,
+          "nickName": user.nickName,
+          "grade": user.grade,
+          "userInfo": user.userInfo,
+        },
+        "replyAddress": "join_user_init"
+      });
 
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      try {
-        if (_client.closeReason == null) {
-          _send({"type": "ping"});
-        } else {
-          dispose();
-          timer.cancel();
-        }
-      } catch (e) {
-        timer.cancel();
+      // 방 조인 대기
+      var history = await _joined!.future;
+
+      return history;
+    } catch (e) {
+      if (e is VChatCloudError) {
+        _finalDisconnectResult = VChatCloudResult.fromCode(e.code);
       }
-    });
-
-    return history;
+      rethrow;
+    } finally {
+      _joined = null;
+    }
   }
 
   /// 방 퇴장
@@ -355,12 +406,20 @@ class Channel {
     return this;
   }
 
-  void dispose({VChatCloudResult? result}) {
-    if (_client.closeReason == null) {
-      result ??= VChatCloudResult.disconnectedNetwork;
-      _subscription?.cancel();
-      _handler.onDisconnect(result);
+  void dispose(VChatCloudResult result) async {
+    if (_client.closeCode == null && _client.closeReason == null) {
+      try {
+        leave();
+      } catch (e) {
+        if (e is StateError && e.message == "Cannot add event after closing.") {
+          // pass;
+        }
+      }
+      _client.sink.close(3000);
     }
+    _pingTimer?.cancel();
+    _subscription?.cancel();
+    _handler.onDisconnect(result);
   }
 
   ChannelResultModel _decode(dynamic message) {
@@ -375,9 +434,18 @@ class Channel {
 
   void _send(dynamic message) {
     try {
-      _client.sink.add(json.encode(message));
+      if (_client.closeReason == null) {
+        _client.sink.add(json.encode(message));
+      }
     } catch (e) {
       debugPrint(e.toString());
+      rethrow;
     }
+  }
+
+  Future<void> _reconnect() async {
+    final uri = Uri.parse("wss://${VChatCloud.url}:9001/eventbus/websocket");
+    _client = WebSocketChannel.connect(uri);
+    await _client.ready;
   }
 }

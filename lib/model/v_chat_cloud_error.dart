@@ -15,6 +15,10 @@ enum VChatCloudResult {
   channelInvalidPassword(10115, "비밀번호가 일치하지 않습니다."),
   missingRequiredParam(10901, "필수 파라미터 누락"),
 
+  /// 내부 상태 에러 코드
+  alreadyInConnection(100, "이미 접속 요청중입니다."),
+  userBannedByAdmin(101, "관리자에게 차단되었습니다."),
+
   /// API 결과 코드
   incorrectRequest(400, "잘못된 요청입니다."),
 
@@ -36,13 +40,14 @@ class VChatCloudError extends Error {
   late final int code;
   late final String message;
 
+  VChatCloudError(this.code, this.message);
+
   VChatCloudError.fromCode(int code) {
     var result = VChatCloudResult.fromCode(code);
-    code = result.code;
+    this.code = result.code;
     message = result.message;
   }
 
-  VChatCloudError(this.code, this.message);
   VChatCloudError.fromResult(
     VChatCloudResult result, {
     int? code,
